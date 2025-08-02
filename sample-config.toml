@@ -1,0 +1,4 @@
+
+[idle_config]
+duration = "5s"
+command = []

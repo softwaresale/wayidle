@@ -1,18 +1,30 @@
 mod app;
+mod args;
+mod config;
+mod err;
 mod idle;
 
-use std::{error::Error, time::Duration};
+use std::error::Error;
 
+use clap::Parser;
 use log::{LevelFilter, error, info};
 use wayland_client::Connection;
 
-use crate::app::{WayIdleApp, WayIdleUserState};
+use crate::{
+    app::{WayIdleApp, WayIdleUserState},
+    args::WayIdleArgs,
+    config::WayIdleConfig,
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     env_logger::builder()
         .filter_level(LevelFilter::Info)
         .parse_default_env()
         .init();
+
+    let args = WayIdleArgs::parse();
+
+    let wayidle_config = WayIdleConfig::load(args.config_file())?;
 
     info!("starting wayidle...");
 
@@ -31,9 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut event_queue = conn.new_event_queue();
     let qhandle = event_queue.handle();
 
-    let user_data = WayIdleUserState {
-        idle_duration: Duration::from_secs(5),
-    };
+    let user_data = WayIdleUserState::from(&wayidle_config);
     let mut app = WayIdleApp::default();
 
     let _registry = display.get_registry(&qhandle, user_data);

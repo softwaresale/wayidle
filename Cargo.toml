@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap = { version = "4.5.42", features = ["derive", "env"] }
 env_logger = "0.11.8"
 log = "0.4.27"
+parse_duration = "2.1.1"
+serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
+toml = "0.9.4"
 wayland-client = { version = "0.31.11", features = ["log"] }
 wayland-protocols = { version = "0.32.9", features = ["client", "staging"] }

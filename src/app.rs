@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use log::info;
+use log::{debug, info};
 use wayland_client::{
     Dispatch, delegate_dispatch, delegate_noop,
     protocol::{wl_registry, wl_seat::WlSeat},
@@ -9,27 +7,38 @@ use wayland_protocols::ext::idle_notify::v1::client::{
     ext_idle_notification_v1::ExtIdleNotificationV1, ext_idle_notifier_v1::ExtIdleNotifierV1,
 };
 
-use crate::idle::IdleListener;
+use crate::{
+    config::{IdleConfig, WayIdleConfig},
+    idle::IdleListener,
+};
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct WayIdleUserState {
-    pub(crate) idle_duration: Duration,
+    idle_config: IdleConfig,
+}
+
+impl From<&WayIdleConfig> for WayIdleUserState {
+    fn from(value: &WayIdleConfig) -> Self {
+        Self {
+            idle_config: value.idle_config.clone(),
+        }
+    }
 }
 
 #[derive(Default)]
 pub struct WayIdleApp {
     idle_listener: IdleListener,
-    config: IdleConfig,
+    config: IdleConfigState,
 }
 
 #[derive(Default)]
-struct IdleConfig {
+struct IdleConfigState {
     seat: Option<WlSeat>,
     idle_notifier: Option<ExtIdleNotifierV1>,
     active: bool,
 }
 
-impl IdleConfig {
+impl IdleConfigState {
     fn add_seat(&mut self, incoming_seat: WlSeat) {
         self.seat = Some(incoming_seat);
     }
@@ -67,13 +76,14 @@ impl Dispatch<wl_registry::WlRegistry, WayIdleUserState> for WayIdleApp {
                 interface,
                 version,
             } => {
-                info!(
+                debug!(
                     "global registered: name={}, interface={}, version={}",
                     name, interface, version
                 );
 
                 match &interface[..] {
                     "wl_seat" => {
+                        info!("found seat");
                         let seat = proxy.bind::<WlSeat, _, _>(name, version, qhandle, ());
                         state.config.add_seat(seat);
                     }
@@ -93,10 +103,10 @@ impl Dispatch<wl_registry::WlRegistry, WayIdleUserState> for WayIdleApp {
                     && !state.config.active
                 {
                     notifier.get_idle_notification(
-                        data.idle_duration.as_millis() as u32,
+                        data.idle_config.duration().as_millis() as u32,
                         seat,
                         qhandle,
-                        *data,
+                        data.clone(),
                     );
 
                     info!("configured idle notification");
