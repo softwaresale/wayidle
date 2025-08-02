@@ -1,0 +1,11 @@
+[package]
+name = "wayidle"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+env_logger = "0.11.8"
+log = "0.4.27"
+thiserror = "2.0.12"
+wayland-client = { version = "0.31.11", features = ["log"] }
+wayland-protocols = { version = "0.32.9", features = ["client", "staging"] }
