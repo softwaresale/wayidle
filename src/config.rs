@@ -49,6 +49,10 @@ impl IdleConfig {
     pub fn duration(&self) -> Duration {
         self.duration
     }
+
+    pub fn command(&self) -> &[String] {
+        self.command.as_slice()
+    }
 }
 
 fn serde_parse_duration<'de, D>(deserialize: D) -> Result<Duration, D::Error>

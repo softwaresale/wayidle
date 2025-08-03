@@ -25,6 +25,12 @@ impl From<&WayIdleConfig> for WayIdleUserState {
     }
 }
 
+impl WayIdleUserState {
+    pub fn command(&self) -> &[String] {
+        self.idle_config.command()
+    }
+}
+
 #[derive(Default)]
 pub struct WayIdleApp {
     idle_listener: IdleListener,

@@ -1,5 +1,6 @@
 mod app;
 mod args;
+mod command;
 mod config;
 mod err;
 mod idle;
